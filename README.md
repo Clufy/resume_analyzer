@@ -116,7 +116,7 @@ To use the AI Coach features, you need Ollama running locally.
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/aquib/resume-analyzer.git
+    git clone https://github.com/Clufy/resume-analyzer.git
     cd resume-analyzer
     ```
 
