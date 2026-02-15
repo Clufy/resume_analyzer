@@ -1,0 +1,36 @@
+# Global ignores
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.npm/
+.yarn/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Supabase
+supabase/tmp/

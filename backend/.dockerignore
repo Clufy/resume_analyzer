@@ -1,0 +1,15 @@
+.env
+.env.*
+__pycache__
+.pytest_cache
+.coverage
+htmlcov/
+uploads/
+*.pyc
+*.pyo
+.git
+.gitignore
+.vscode
+.idea
+*.md
+test_supabase.py
