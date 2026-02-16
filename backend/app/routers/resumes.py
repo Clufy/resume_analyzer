@@ -5,8 +5,9 @@ from app.repositories.resume_repository import ResumeRepository
 from app.services.resume_service import ResumeService
 from app.schemas.resume import ResumeParseResponse
 from app.core.rate_limit import limiter
+from app.core.auth import get_api_key
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_api_key)])
 
 def get_service(db=Depends(get_db)) -> ResumeService:
     repo = ResumeRepository(db)

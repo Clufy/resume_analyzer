@@ -32,6 +32,13 @@ class ResumeService:
              raise AppException(status_code=400, message="Invalid file type")
 
         file_bytes = await file.read()
+
+        # Security: Validate magic bytes
+        import filetype
+        kind = filetype.guess(file_bytes)
+        if kind is None or kind.mime not in ALLOWED_MIMES:
+            raise AppException(status_code=400, message="Invalid file content (magic bytes mismatch)")
+
         max_size = settings.max_upload_size_mb * 1024 * 1024
         if len(file_bytes) > max_size:
              raise AppException(status_code=413, message=f"File too large. Maximum size is {settings.max_upload_size_mb}MB")

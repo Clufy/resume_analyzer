@@ -8,6 +8,8 @@ export async function apiCall<T>(
 
   if (!baseUrl) throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
 
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+
   const fetchWithRetry = async (attempt: number): Promise<T> => {
     try {
       const isFormData = options.body instanceof FormData;
@@ -20,6 +22,7 @@ export async function apiCall<T>(
         signal: controller.signal,
         headers: {
           ...(isFormData ? {} : { "Content-Type": "application/json" }),
+          ...(apiKey ? { "X-API-Key": apiKey } : {}),
           ...(options.headers || {}),
         },
       });

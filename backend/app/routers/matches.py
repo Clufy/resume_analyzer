@@ -6,8 +6,9 @@ from app.repositories.match_repository import MatchRepository
 from app.repositories.resume_repository import ResumeRepository
 from app.services.match_service import MatchService
 from app.core.rate_limit import limiter
+from app.core.auth import get_api_key
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_api_key)])
 
 def get_service(db=Depends(get_db)) -> MatchService:
     match_repo = MatchRepository(db)

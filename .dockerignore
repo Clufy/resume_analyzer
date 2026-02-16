@@ -1,0 +1,39 @@
+
+# Version Control
+.git
+.gitignore
+.vscode
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.ruff_cache/
+
+# Docker
+docker-compose.override.yml
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Backend Specific
+backend/scripts/
+backend/tests/
+backend/uploads/

@@ -10,16 +10,21 @@ const SKILL_PARTICLES = [
 ];
 
 export default function FloatingParticles() {
-  const [particles, setParticles] = useState<{x: number, y: number, skill: string, size: number, delay: number}[]>([]);
+  const [particles, setParticles] = useState<{ x: number, y: number, skill: string, size: number, delay: number }[]>([]);
 
   useEffect(() => {
-    const generated = Array.from({length: 20}, () => ({
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      skill: SKILL_PARTICLES[Math.floor(Math.random() * SKILL_PARTICLES.length)],
-      size: 12 + Math.random() * 12,
-      delay: Math.random() * 10,
-    }));
+    const generated = Array.from({ length: 20 }, () => {
+      const array = new Uint32Array(5);
+      window.crypto.getRandomValues(array);
+
+      return {
+        x: (array[0] % 100),
+        y: (array[1] % 100),
+        skill: SKILL_PARTICLES[array[2] % SKILL_PARTICLES.length],
+        size: 12 + (array[3] % 12),
+        delay: (array[4] % 10),
+      };
+    });
     setParticles(generated);
   }, []);
 

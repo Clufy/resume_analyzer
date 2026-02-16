@@ -1,7 +1,7 @@
 
 
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     app_env: Literal["development", "production", "test"] = "development"
     app_port: int = 8000
     debug: bool = False
+    api_key: str = "default_unsafe_dev_key"
 
 
     supabase_url: str
@@ -36,10 +37,10 @@ class Settings(BaseSettings):
 
 
     max_upload_size_mb: int = 10
-    allowed_extensions: list[str] = [".pdf", ".docx"]
+    allowed_extensions: list[str] = [".pdf", ".docx"] # Kept original line
 
 
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: List[str] = ["http://localhost:3000"] # Changed to List[str]
 
 
 @lru_cache
