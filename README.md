@@ -60,33 +60,47 @@ Built with a modern tech stack (FastAPI, Next.js, Supabase) and integrated with 
 
 ```mermaid
 graph TD
-    subgraph Client
-        Browser[Web Browser / Next.js]
+    Browser["Web Browser (Next.js)"]
+
+    subgraph Middleware ["FastAPI Middleware"]
+        Auth["API Key Auth (HMAC)"]
+        RL["Rate Limiter (slowapi)"]
+        Headers["Security Headers (CSP/HSTS)"]
     end
 
-    subgraph Server [Backend / Docker]
-        API[FastAPI Server]
-        Parser[Resume Parsing Service]
-        Matcher[Job Matching Service]
-        NLP["NLP Engine (spaCy/Transformers)"]
-        LLM["Local LLM (Ollama/DeepSeek)"]
+    subgraph Services ["Backend Services"]
+        Parser["Resume Parser (spaCy / PyMuPDF)"]
+        Matcher["Job Matcher (SentenceTransformers)"]
+        LLM["AI Coach (Ollama / DeepSeek)"]
+        Cache["Stats Cache (in-memory TTL)"]
     end
 
-    subgraph Data
-        DB[(Supabase / PostgreSQL)]
+    subgraph Data ["Data Layer"]
+        DB[("Supabase (PostgreSQL)")]
+        Storage["Supabase Storage (Files)"]
     end
 
-    Browser -->|Upload Resume / Job Desc| API
-    API -->|Raw File| Parser
-    Parser -->|Extracted Text| NLP
-    NLP -->|Structured Data| API
-    API -->|Store Data| DB
-    API -->|Request Match| Matcher
-    Matcher -->|Get Embeddings| NLP
-    Matcher -->|Match Score| API
-    API -->|Request AI Insight| LLM
-    LLM -->|Qualitative Feedback| API
-    API -->|JSON Response| Browser
+    Browser -->|"X-API-Key header"| Auth
+    Auth -->|Valid| RL
+    RL -->|Within limit| Headers
+    Headers --> Router["FastAPI Router"]
+
+    Router -->|"POST /resume/upload"| Parser
+    Parser -->|Extracted text + skills| DB
+    Parser -->|File bytes| Storage
+
+    Router -->|"POST /resume/match"| Matcher
+    Matcher -->|Embeddings + score| DB
+
+    Router -->|"POST /resume/analyze"| LLM
+    LLM -->|Structured feedback| Router
+
+    Router -->|"GET /resume/stats"| Cache
+    Cache -->|Cache miss| DB
+
+    Router -->|"GET /resume/match/:id"| DB
+
+    DB -->|JSON| Browser
 ```
 
 ## Getting Started
