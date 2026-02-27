@@ -30,9 +30,9 @@ Built with a modern tech stack (FastAPI, Next.js, Supabase) and integrated with 
 - **Smart Resume Parsing**: Automatically extracts contact info, skills, education, and work experience from PDF and DOCX files using `spaCy` and `PyMuPDF`.
 - **Semantic Job Matching**: Uses `SentenceTransformers` to calculate a semantic similarity score between a resume and a job description, going beyond simple keyword matching.
 - **AI Career Coach**: Integrates with **Ollama** (running **DeepSeek** or **Mistral**) to provide qualitative feedback, identifying strengths, weaknesses, and actionable improvements.
-- **Interactive Dashboard**: A polished, responsive UI built with `Next.js` and `Shadcn/UI` for easy management of resumes and analysis results.
-- **Secure & Private**: Designed with privacy in mind. Data can be processed locally or securely stored in Supabase with Row Level Security (RLS).
-- **Dockerized**: Fully containerized setup for consistent development and deployment environments.
+- **Match History**: Browse all past analyses, search through them, and click into any match for a full detailed report including a score ring and skill radar chart.
+- **Interactive Dashboard**: A polished, responsive UI built with `Next.js` and `Shadcn/UI` with skeleton loaders and toast notifications.
+- **Secure & Private**: Data stored securely in Supabase. API key authentication, constant-time comparison, input sanitization, and strict security headers (CSP, HSTS, Permissions-Policy) throughout.
 
 ## Tech Stack
 
@@ -44,16 +44,17 @@ Built with a modern tech stack (FastAPI, Next.js, Supabase) and integrated with 
 - **Database**: [Supabase](https://supabase.com/) (PostgreSQL) - Scalable relational database with real-time capabilities.
 
 ### Frontend
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router) - The React framework for the web.
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router) - The React framework for the web.
 - **Language**: [TypeScript](https://www.typescriptlang.org/) - For type-safe code.
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework.
 - **Components**: [Shadcn/UI](https://ui.shadcn.com/) - Beautifully designed components.
+- **Charts**: [Recharts](https://recharts.org/) - Composable charting for skill radar and score visualisations.
+- **Notifications**: [Sonner](https://sonner.emilkowal.ski/) - Toast notification system.
 - **Icons**: [Lucide React](https://lucide.dev/) - Consistent icon set.
 
-### DevOps
-- **Containerization**: [Docker](https://www.docker.com/) & Docker Compose.
+### Tooling
 - **Linting & Formatting**: `ruff` (Python), `eslint` (TypeScript).
-- **Testing**: `pytest` (Backend), `vitest` / `playwright` (Frontend).
+- **Testing**: `pytest` (Backend).
 
 ## Architecture
 
@@ -145,7 +146,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 </details>
 
@@ -168,19 +169,10 @@ Once the backend is running, you can access the interactive API documentation:
 
 ## Testing
 
-We use robust testing frameworks to ensure stability.
-
-- **Backend**:
-  ```bash
-  cd backend
-  pytest
-  ```
-- **Frontend**:
-  ```bash
-  cd frontend
-  npm run test      # Unit tests with Vitest
-  npm run test:e2e  # E2E tests with Playwright
-  ```
+```bash
+cd backend
+pytest
+```
 
 ## Contributing
 
