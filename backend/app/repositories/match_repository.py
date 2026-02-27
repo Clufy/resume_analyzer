@@ -84,3 +84,35 @@ class MatchRepository:
             "avg_score": avg_score,
             "success_rate": success_rate
         }
+
+    def get_match_detail(self, match_id: int):
+        """Fetch a single match with its job description and resume data."""
+        match_resp = self.db.table("matches").select("*").eq("id", match_id).execute()
+        if not match_resp.data:
+            return None
+
+        m = match_resp.data[0]
+
+        job = None
+        if m.get("jd_id"):
+            jd_resp = self.db.table("job_descriptions").select("*").eq("id", m["jd_id"]).execute()
+            if jd_resp.data:
+                job = jd_resp.data[0]
+
+        resume = None
+        if m.get("resume_id"):
+            res_resp = self.db.table("resumes").select("id,filename,skills").eq("id", m["resume_id"]).execute()
+            if res_resp.data:
+                resume = res_resp.data[0]
+
+        return {
+            "id": m["id"],
+            "jd_text": job.get("description", "") if job else "",
+            "jd_skills": job.get("skills", []) if job else [],
+            "match_score": m.get("match_score", 0),
+            "missing_skills": m.get("missing_skills", []),
+            "resume_filename": resume.get("filename") if resume else None,
+            "resume_skills": resume.get("skills", []) if resume else [],
+            "created_at": m.get("created_at"),
+        }
+

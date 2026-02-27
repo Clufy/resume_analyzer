@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 import logging
 from typing import cast
@@ -11,6 +12,19 @@ from app.repositories.resume_repository import ResumeRepository
 from app.core.exceptions import AppException
 
 logger = logging.getLogger(__name__)
+
+_UNSAFE_FILENAME_RE = re.compile(r'[\x00-\x1f\x7f/\\<>:"|?*]')
+
+def _sanitize_filename(filename: str) -> str:
+    """Strip path-traversal and control characters; cap length."""
+    # Remove directory components
+    filename = os.path.basename(filename)
+    # Remove control chars and shell-special chars
+    filename = _UNSAFE_FILENAME_RE.sub("_", filename)
+    # Collapse multiple underscores/dots
+    filename = re.sub(r'\.{2,}', '.', filename)
+    # Limit total length
+    return filename[:255]
 
 ALLOWED_MIMES = {
     "application/pdf",
@@ -25,7 +39,11 @@ class ResumeService:
         if not file.filename:
              raise AppException(status_code=400, message="Filename is missing")
 
-        if not file.filename.lower().endswith((".pdf", ".docx")):
+        safe_filename = _sanitize_filename(file.filename)
+        if not safe_filename:
+            raise AppException(status_code=400, message="Invalid filename")
+
+        if not safe_filename.lower().endswith((".pdf", ".docx")):
             raise AppException(status_code=400, message="Only PDF or DOCX files allowed")
 
         if file.content_type not in ALLOWED_MIMES:
@@ -33,25 +51,26 @@ class ResumeService:
 
         file_bytes = await file.read()
 
+        # Reject oversized files before expensive magic-byte check
+        max_size = settings.max_upload_size_mb * 1024 * 1024
+        if len(file_bytes) > max_size:
+             raise AppException(status_code=413, message=f"File too large. Maximum size is {settings.max_upload_size_mb}MB")
+
         # Security: Validate magic bytes
         import filetype
         kind = filetype.guess(file_bytes)
         if kind is None or kind.mime not in ALLOWED_MIMES:
             raise AppException(status_code=400, message="Invalid file content (magic bytes mismatch)")
 
-        max_size = settings.max_upload_size_mb * 1024 * 1024
-        if len(file_bytes) > max_size:
-             raise AppException(status_code=413, message=f"File too large. Maximum size is {settings.max_upload_size_mb}MB")
-
         # Storage Upload
         file_url = None
         try:
-            file_url = storage_upload(file_bytes, file.filename)
+            file_url = storage_upload(file_bytes, safe_filename)
         except RuntimeError as e:
             logger.warning(f"Storage upload failed: {e}")
 
         # Processing
-        ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "bin"
+        ext = safe_filename.rsplit(".", 1)[-1] if "." in safe_filename else "bin"
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}", mode="wb") as tmp:
             tmp.write(cast(bytes, file_bytes))
             tmp_path = tmp.name
@@ -65,7 +84,7 @@ class ResumeService:
         embeddings = parser.get_embeddings(text)
 
         resume_data = {
-            "filename": file.filename,
+            "filename": safe_filename,
             "text": text,
             "skills": entities.get("skills", []),
             "education": entities.get("education", []),

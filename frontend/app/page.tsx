@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { FileText, Briefcase, Plus, Sparkles, Zap } from "lucide-react";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Button } from "@/components/ui/Button";
@@ -79,32 +80,47 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger-children">
-        <StatsCard
-          title="Total Resumes"
-          value={stats?.total_resumes ?? 0}
-          icon={FileText}
-          description="Processed resumes"
-        />
-        <StatsCard
-          title="Job Matches"
-          value={stats?.total_matches ?? 0}
-          icon={Briefcase}
-          description="Analysis reports generated"
-        />
-        <StatsCard
-          title="Success Rate"
-          value={stats?.total_matches ? `${stats.success_rate}%` : "--"}
-          icon={Sparkles}
-          description={stats?.total_matches ? "Matches scoring ≥ 70%" : "Run a match to see"}
-          className={!stats?.total_matches ? "opacity-60" : ""}
-        />
-        <StatsCard
-          title="Avg. Score"
-          value={stats?.total_matches ? `${stats.avg_score}%` : "--"}
-          icon={Zap}
-          description={stats?.total_matches ? "Across all matches" : "Run a match to see"}
-          className={!stats?.total_matches ? "opacity-60" : ""}
-        />
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-28 rounded-xl bg-muted/50 animate-shimmer"
+              style={{
+                background: "linear-gradient(90deg, hsl(var(--muted)/0.5) 25%, hsl(var(--muted)/0.8) 50%, hsl(var(--muted)/0.5) 75%)",
+                backgroundSize: "200% 100%",
+              }}
+            />
+          ))
+        ) : (
+          <>
+            <StatsCard
+              title="Total Resumes"
+              value={stats?.total_resumes ?? 0}
+              icon={FileText}
+              description="Processed resumes"
+            />
+            <StatsCard
+              title="Job Matches"
+              value={stats?.total_matches ?? 0}
+              icon={Briefcase}
+              description="Analysis reports generated"
+            />
+            <StatsCard
+              title="Success Rate"
+              value={stats?.total_matches ? `${stats.success_rate}%` : "--"}
+              icon={Sparkles}
+              description={stats?.total_matches ? "Matches scoring ≥ 70%" : "Run a match to see"}
+              className={!stats?.total_matches ? "opacity-60" : ""}
+            />
+            <StatsCard
+              title="Avg. Score"
+              value={stats?.total_matches ? `${stats.avg_score}%` : "--"}
+              icon={Zap}
+              description={stats?.total_matches ? "Across all matches" : "Run a match to see"}
+              className={!stats?.total_matches ? "opacity-60" : ""}
+            />
+          </>
+        )}
       </div>
 
       {/* Main Content Grid */}
@@ -117,9 +133,10 @@ export default function Dashboard() {
               await import("@/lib/api").then(m => m.deleteResume(id));
               setRecentResumes(prev => prev.filter(r => r.id !== id));
               fetchData();
+              toast.success("Resume deleted.");
             } catch (err) {
               console.error("Failed to delete resume", err);
-              alert("Failed to delete resume");
+              toast.error("Failed to delete resume. Please try again.");
             }
           }}
         />

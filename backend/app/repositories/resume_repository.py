@@ -12,7 +12,14 @@ class ResumeRepository:
         return response.data[0]
 
     def get_by_id(self, resume_id: int):
-        response = self.db.table("resumes").select("*").eq("id", resume_id).limit(1).execute()
+        # Exclude embeddings — they're large float arrays not needed for matching/analysis
+        response = (
+            self.db.table("resumes")
+            .select("id, filename, text, skills, education, experience, created_at")
+            .eq("id", resume_id)
+            .limit(1)
+            .execute()
+        )
         if not response.data:
             return None
         return response.data[0]
@@ -22,10 +29,7 @@ class ResumeRepository:
         return response.data or []
 
     def delete(self, resume_id: int):
-        # Determine if we need to manually delete matches first (if no cascade)
-        # For safety, let's delete matches first
         self.db.table("matches").delete().eq("resume_id", resume_id).execute()
-        
         response = self.db.table("resumes").delete().eq("id", resume_id).execute()
         return response.data
 

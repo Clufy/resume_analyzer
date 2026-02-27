@@ -73,8 +73,30 @@ class AnalysisResponse(BaseModel):
     strengths: list[str] = Field(default_factory=list)
     weaknesses: list[str] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)
+    keywords_to_add: list[str] = Field(default_factory=list)
     score: int
+    match_percentage: int | None = None
     error: str | None = None
+
+
+class AnalyzeRequest(BaseModel):
+    resume_id: int = Field(..., gt=0)
+    job_description: str | None = Field(
+        default=None,
+        min_length=10,
+        max_length=5000,
+        description="Optional job description to compare the resume against (max 5000 chars)",
+    )
+
+    @field_validator("job_description")
+    @classmethod
+    def sanitize_job_description(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        v = v.strip()
+        if not v:
+            return None
+        return v
 
 class MatchRequest(BaseModel):
     resume_id: int

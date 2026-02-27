@@ -1,5 +1,6 @@
 """Pytest configuration and fixtures."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -11,11 +12,20 @@ from fastapi.testclient import TestClient
 
 from main import app
 
+# Read the API key from the environment (same source the app uses)
+TEST_API_KEY = os.environ.get("API_KEY", "default_unsafe_dev_key")
+
 
 @pytest.fixture
 def client():
-    """Test client for API testing."""
+    """Unauthenticated test client (for testing auth-free or 403 scenarios)."""
     return TestClient(app)
+
+
+@pytest.fixture
+def auth_client():
+    """Authenticated test client — sends X-API-Key on every request."""
+    return TestClient(app, headers={"X-API-Key": TEST_API_KEY})
 
 
 @pytest.fixture

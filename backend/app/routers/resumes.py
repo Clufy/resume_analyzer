@@ -39,9 +39,6 @@ async def list_resumes(
     offset: int = Query(default=0, ge=0),
     service: ResumeService = Depends(get_service)
 ):
-    # Map dictionary to response model later or return list of dicts. 
-    # The existing schema for list items might need to be imported or we just return the raw dicts
-    # The frontend expects certain fields.
     return service.list_resumes(limit, offset)
 
 @router.delete("/resume/{resume_id}")

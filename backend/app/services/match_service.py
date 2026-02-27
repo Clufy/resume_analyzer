@@ -42,7 +42,7 @@ class MatchService:
         
         return self.match_repo.create_match(match_data), job, jd_entities
 
-    async def analyze_resume(self, resume_id: int, job_description: str = None):
+    async def analyze_resume(self, resume_id: int, job_description: str | None = None):
         resume = self.resume_repo.get_by_id(resume_id)
         if not resume:
             raise AppException(status_code=404, message="Resume not found")
@@ -55,7 +55,24 @@ class MatchService:
     def delete_match(self, match_id: int):
         if not self.match_repo.get_match_by_id(match_id):
             raise AppException(status_code=404, message="Match not found")
+        self._invalidate_stats_cache()
         return self.match_repo.delete_match(match_id)
 
+    # ── Stats with TTL cache ────────────────────────────────────────────────
+    _stats_cache: dict = {}
+    _stats_cache_ttl: int = 60  # seconds
+
+    def _invalidate_stats_cache(self):
+        MatchService._stats_cache.clear()
+
     def get_stats(self):
-        return self.match_repo.get_stats()
+        import time
+        cached = MatchService._stats_cache
+        now = time.monotonic()
+        if cached and now - cached.get("_ts", 0) < self._stats_cache_ttl:
+            return {k: v for k, v in cached.items() if k != "_ts"}
+        result = self.match_repo.get_stats()
+        resume_count = self.resume_repo.count()
+        payload = {"total_resumes": resume_count, **result}
+        MatchService._stats_cache = {**payload, "_ts": now}
+        return payload

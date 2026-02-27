@@ -13,30 +13,31 @@ embedding_model = SentenceTransformer(settings.embedding_model)
 
 
 SKILL_KEYWORDS = [
-    "Python",
-    "JavaScript",
-    "TypeScript",
-    "Flutter",
-    "Kotlin",
-    "Dart",
-    "React",
-    "Node.js",
-    "Django",
-    "FastAPI",
-    "Azure",
-    "Firebase",
-    "SQL",
-    "PostgreSQL",
-    "MongoDB",
-    "REST API",
-    "Git",
-    "Docker",
-    "Kubernetes",
-    "CI/CD",
-    "HTML",
-    "CSS",
-    "ETL",
-    "TensorFlow",
+    # Languages
+    "Python", "JavaScript", "TypeScript", "Java", "Go", "Rust", "C++", "C#",
+    "Ruby", "Swift", "Kotlin", "Dart", "R", "Scala", "PHP",
+    # Frontend
+    "React", "Next.js", "Vue", "Angular", "Svelte", "Redux", "HTML", "CSS",
+    "Tailwind", "SASS", "Responsive Design", "Webpack", "Vite",
+    # Backend / Frameworks
+    "Node.js", "Django", "FastAPI", "Flask", "Express", "Spring Boot",
+    "NestJS", "Laravel", "GraphQL", "REST API", "gRPC", "WebSockets",
+    # Mobile
+    "Flutter", "React Native", "Android", "iOS", "Firebase",
+    # Databases
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "Elasticsearch",
+    "DynamoDB", "Cassandra", "SQL",
+    # Cloud & DevOps
+    "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "Ansible",
+    "CI/CD", "GitHub Actions", "Jenkins", "GitLab CI", "Linux", "Nginx",
+    "Serverless", "Lambda",
+    # Data / ML / AI
+    "TensorFlow", "PyTorch", "scikit-learn", "Pandas", "NumPy", "Spark",
+    "Airflow", "Kafka", "ETL", "Machine Learning", "Deep Learning", "NLP",
+    "LangChain", "OpenAI", "Vector Database",
+    # Tools & Practices
+    "Git", "Agile", "Scrum", "Microservices", "System Design",
+    "Unit Testing", "Integration Testing", "Selenium", "Postman", "Cypress",
 ]
 
 EDUCATION_KEYWORDS = [

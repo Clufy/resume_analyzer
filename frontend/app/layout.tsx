@@ -1,11 +1,12 @@
 // app/layout.tsx (server component)
-import "../styles/globals.css"; // base global styles (resets, utilities, etc.)
+import "../styles/globals.css";
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import ResumeProviderWrapper from "@/components/resume_provider_wrapper";
 import Layout from "@/components/ui/Layout";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,7 +15,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "AI Resume Analyzer",
-  description: "Analyze and match resumes with AI",
+  description: "Analyze and match resumes with AI-powered insights",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </Layout>
           </ResumeProviderWrapper>
+          <Toaster richColors position="bottom-right" />
         </ThemeProvider>
       </body>
     </html>

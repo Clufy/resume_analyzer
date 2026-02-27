@@ -126,9 +126,18 @@ export interface AnalysisResponse {
   strengths: string[];
   weaknesses: string[];
   suggestions: string[];
+  keywords_to_add: string[];
   score: number;
+  match_percentage: number | null;
   error?: string;
 }
+
+export interface OllamaStatus {
+  status: "online" | "offline";
+  model: string;
+  available_models: string[];
+}
+
 
 export interface MatchRequest {
   resume_id: number;
@@ -159,4 +168,19 @@ export const deleteMatch = async (id: number): Promise<{ message: string }> => {
   return apiCall<{ message: string }>(`/resume/match/${id}`, {
     method: "DELETE",
   });
+};
+
+export interface MatchDetail {
+  id: number;
+  jd_text: string;
+  jd_skills: string[];
+  match_score: number;
+  missing_skills: string[];
+  resume_filename?: string;
+  resume_skills?: string[];
+  created_at?: string;
+}
+
+export const getMatchById = async (id: number): Promise<MatchDetail> => {
+  return apiCall<MatchDetail>(`/resume/match/${id}`);
 };

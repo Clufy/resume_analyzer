@@ -1,45 +1,60 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { getMatches, type Match } from "@/lib/api";
+import React, { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { getMatches, deleteMatch, type Match } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Briefcase, FileText, Calendar, Search, XCircle, Trash2 } from "lucide-react";
+import { Briefcase, FileText, Calendar, Search, XCircle, Trash2, ArrowRight, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { deleteMatch } from "@/lib/api";
 
 export default function MatchesPage() {
     const [matches, setMatches] = useState<Match[]>([]);
-    const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchMatches = async () => {
             try {
                 const data = await getMatches();
                 setMatches(data);
-                setFilteredMatches(data);
             } catch (error: unknown) {
                 console.error("Failed to fetch matches", error);
+                toast.error("Failed to load match history.");
             } finally {
                 setLoading(false);
             }
         };
-
         fetchMatches();
     }, []);
 
-    useEffect(() => {
-        const lowerSearch = search.toLowerCase();
-        const filtered = matches.filter(
+    const filteredMatches = useMemo(() => {
+        const q = search.toLowerCase();
+        if (!q) return matches;
+        return matches.filter(
             (m) =>
-                (m.resume_filename && m.resume_filename.toLowerCase().includes(lowerSearch)) ||
-                (m.jd_text && m.jd_text.toLowerCase().includes(lowerSearch))
+                (m.resume_filename && m.resume_filename.toLowerCase().includes(q)) ||
+                (m.jd_text && m.jd_text.toLowerCase().includes(q))
         );
-        setFilteredMatches(filtered);
     }, [search, matches]);
+
+    const handleDelete = async (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        setDeletingId(id);
+        try {
+            await deleteMatch(id);
+            setMatches(prev => prev.filter(m => m.id !== id));
+            toast.success("Match deleted.");
+        } catch {
+            toast.error("Failed to delete match.");
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     return (
         <div className="container mx-auto py-8 space-y-8 animate-fade-in">
@@ -48,7 +63,7 @@ export default function MatchesPage() {
                     <h1 className="text-3xl font-bold tracking-tight">
                         Match <span className="gradient-text">History</span>
                     </h1>
-                    <p className="text-muted-foreground">View past resume-job match analysis reports.</p>
+                    <p className="text-muted-foreground">Click any match to view the full report.</p>
                 </div>
             </div>
 
@@ -75,7 +90,11 @@ export default function MatchesPage() {
                     ))
                 ) : filteredMatches.length > 0 ? (
                     filteredMatches.map((match) => (
-                        <Card key={match.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+                        <Card
+                            key={match.id}
+                            className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+                            onClick={() => router.push(`/matches/${match.id}`)}
+                        >
                             <CardHeader className="pb-3 border-b bg-muted/20">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3">
@@ -83,9 +102,7 @@ export default function MatchesPage() {
                                             <Briefcase className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-base truncate max-w-[150px]" title={match.jd_text}>
-                                                Job Match
-                                            </CardTitle>
+                                            <CardTitle className="text-base">Job Match</CardTitle>
                                             <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                                 <Calendar className="h-3 w-3" />
                                                 {match.created_at ? new Date(match.created_at).toLocaleDateString() : "Just now"}
@@ -100,19 +117,13 @@ export default function MatchesPage() {
                                             variant="ghost"
                                             size="sm"
                                             className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                if (!confirm("Are you sure you want to delete this match?")) return;
-                                                try {
-                                                    await deleteMatch(match.id);
-                                                    setMatches(prev => prev.filter(m => m.id !== match.id));
-                                                } catch (err) {
-                                                    console.error("Failed to delete", err);
-                                                    alert("Failed to delete match");
-                                                }
-                                            }}
+                                            onClick={(e) => handleDelete(e, match.id)}
+                                            disabled={deletingId === match.id}
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            {deletingId === match.id
+                                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                                : <Trash2 className="h-4 w-4" />
+                                            }
                                         </Button>
                                     </div>
                                 </div>
@@ -136,7 +147,7 @@ export default function MatchesPage() {
                                                 </Badge>
                                             ))
                                         ) : (
-                                            <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                            <span className="text-xs text-emerald-600 dark:text-emerald-400">
                                                 No missing skills!
                                             </span>
                                         )}
@@ -146,6 +157,10 @@ export default function MatchesPage() {
                                             </span>
                                         )}
                                     </div>
+                                </div>
+
+                                <div className="flex items-center justify-end text-xs text-primary/70 group-hover:text-primary transition-colors pt-1">
+                                    View full report <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
                                 </div>
                             </CardContent>
                         </Card>
